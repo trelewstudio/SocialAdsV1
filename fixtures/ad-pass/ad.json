@@ -1,0 +1,37 @@
+{
+  "title": "Ireland Shopify migration",
+  "platforms": [
+    "ig",
+    "fb"
+  ],
+  "landing_url": "https://trelew.studio/ie/shopify-migration",
+  "language_code": "en-IE",
+  "duration_target_seconds": 30,
+  "aspect_ratio": "9:16",
+  "spoken_script": "Your Shopify migration should not break redirects, analytics, or the checkout your customers already use. Trelew maps the current store, moves the catalogue and integrations, and tests the complete purchase path before launch. You get a migration plan, a working Shopify build, and a clear handover. See how we approach migrations for Irish businesses, then book a conversation with the studio.",
+  "on_screen_text": [
+    "Keep redirects and analytics intact",
+    "Test the complete purchase path",
+    "Plan your Shopify migration"
+  ],
+  "primary_text": "Moving to Shopify involves more than transferring products. Trelew plans redirects, analytics, integrations and checkout testing before launch.",
+  "headline": "Plan your Shopify migration",
+  "description": "See the migration approach for Irish businesses.",
+  "cta_label": "Learn more",
+  "hashtags": [
+    "#ShopifyMigration",
+    "#IrishBusiness"
+  ],
+  "cta_urls": {
+    "ig": "https://trelew.studio/ie/shopify-migration?utm_source=instagram&utm_medium=paid_social&utm_campaign=shopify_migration_ie&utm_content=presenter_problem_solution_a",
+    "fb": "https://trelew.studio/ie/shopify-migration?utm_source=facebook&utm_medium=paid_social&utm_campaign=shopify_migration_ie&utm_content=presenter_problem_solution_a"
+  },
+  "presenter": {
+    "synthetic": true,
+    "appearance": "adult white man",
+    "role": "presenter",
+    "is_client": false
+  },
+  "voice_speed": 1.0,
+  "ai_disclosure_review_required": true
+}

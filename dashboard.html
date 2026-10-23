@@ -1,0 +1,2248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Trelew Studio advertising performance dashboard">
+  <title>Ads Dashboard — Trelew Studio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --cream: #fbf6e8;
+      --paper: #fffdf7;
+      --ink: #122f34;
+      --teal: #338591;
+      --teal-dark: #246772;
+      --copper: #d4ae8c;
+      --line: #d8d4c8;
+      --muted: #5c6d70;
+      --success-bg: #dcefe5;
+      --success-text: #1f5f45;
+      --warning-bg: #f8e8c8;
+      --warning-text: #72501e;
+      --danger-bg: #f4dcd6;
+      --danger-text: #7b3026;
+      --info-bg: #dcecf0;
+      --info-text: #245c66;
+      --shadow: 0 16px 40px rgba(18, 47, 52, 0.08);
+      --radius: 14px;
+      --font: "Courier Prime", "Courier New", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(51, 133, 145, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(51, 133, 145, 0.045) 1px, transparent 1px),
+        var(--cream);
+      background-size: 32px 32px;
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea { font: inherit; }
+
+    button,
+    select { cursor: pointer; }
+
+    a { color: var(--teal-dark); }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--copper);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 24px clamp(16px, 3vw, 48px) 64px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 64px;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .brand {
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      text-decoration: none;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      color: var(--ink);
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .nav a[aria-current="page"] { background: var(--ink); color: var(--cream); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.55fr);
+      gap: clamp(32px, 7vw, 104px);
+      align-items: end;
+      padding: clamp(48px, 8vw, 96px) 0 40px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--teal-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(2.6rem, 7vw, 6.5rem);
+      font-weight: 400;
+      letter-spacing: -0.07em;
+      line-height: 0.94;
+    }
+
+    .hero-copy {
+      max-width: 42ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .sync-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--ink);
+      font-size: 0.78rem;
+    }
+
+    .sync-note::before {
+      width: 8px;
+      height: 8px;
+      content: "";
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .view-tabs {
+      display: inline-flex;
+      gap: 4px;
+      margin: 0 0 32px;
+      padding: 4px;
+      border: 1px solid var(--ink);
+      border-radius: 12px;
+      background: var(--paper);
+    }
+
+    .view-tab {
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 8px;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 700;
+      transition: color 160ms ease, background-color 160ms ease;
+    }
+
+    .view-tab:hover { background: rgba(18, 47, 52, 0.07); }
+    .view-tab[aria-selected="true"] { color: var(--cream); background: var(--ink); }
+
+    [role="tabpanel"][hidden] { display: none; }
+
+    .guide-stack { display: grid; gap: 32px; }
+
+    .checklist-overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .guide-intro,
+    .progress-card,
+    .guide-section {
+      border: 1px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .guide-intro,
+    .progress-card { padding: clamp(20px, 3vw, 32px); }
+
+    .guide-intro h2,
+    .guide-section h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 3vw, 2.35rem);
+      letter-spacing: -0.05em;
+      line-height: 1.08;
+    }
+
+    .guide-intro p:last-child {
+      max-width: 68ch;
+      margin: 16px 0 0;
+      color: var(--muted);
+    }
+
+    .progress-number {
+      display: block;
+      margin-bottom: 18px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 400;
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+
+    progress {
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--cream);
+    }
+
+    progress::-webkit-progress-bar { background: var(--cream); }
+    progress::-webkit-progress-value { background: var(--teal); }
+    progress::-moz-progress-bar { background: var(--teal); }
+
+    .next-step {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .next-step strong { display: block; margin-top: 3px; color: var(--ink); font-size: 0.95rem; }
+
+    .guide-section { overflow: hidden; }
+
+    .guide-section-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .guide-section-header > p {
+      max-width: 62ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .allocation-note {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(212, 174, 140, 0.12);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .allocation-note strong { color: var(--ink); }
+
+    .campaign-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .campaign-card {
+      display: grid;
+      gap: 18px;
+      padding: 24px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .campaign-card:nth-child(2n) { border-right: 0; }
+    .campaign-card:nth-last-child(-n + 2) { border-bottom: 0; }
+
+    .campaign-topline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .campaign-card h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.04em;
+      line-height: 1.25;
+    }
+
+    .campaign-card dl {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 12px 16px;
+      margin: 0;
+      font-size: 0.8rem;
+    }
+
+    .campaign-card dt {
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .campaign-card dd { margin: 0; }
+
+    .readiness-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .readiness-card {
+      padding: 22px 24px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .readiness-card:nth-child(2n) { border-right: 0; }
+    .readiness-card:nth-last-child(-n + 2) { border-bottom: 0; }
+
+    .readiness-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .status-dot {
+      width: 11px;
+      height: 11px;
+      flex: 0 0 auto;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .readiness-card.ready h3 { color: var(--success-text); }
+    .readiness-card.verify h3 { color: var(--warning-text); }
+    .readiness-card.gap h3 { color: var(--danger-text); }
+    .readiness-card.later h3 { color: var(--info-text); }
+    .readiness-card p { margin: 0; color: var(--muted); font-size: 0.8rem; }
+    .readiness-card code { color: var(--ink); overflow-wrap: anywhere; }
+
+    .checklist-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(51, 133, 145, 0.055);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .phase { border-bottom: 1px solid var(--line); }
+    .phase:last-child { border-bottom: 0; }
+
+    .phase-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px 12px;
+    }
+
+    .phase-header h3 { margin: 0; font-size: 1rem; letter-spacing: -0.03em; }
+    .phase-header span { color: var(--muted); font-size: 0.72rem; }
+
+    .check-list { display: grid; }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--line);
+      transition: background-color 160ms ease;
+    }
+
+    .check-item:hover { background: rgba(51, 133, 145, 0.045); }
+
+    .check-item input {
+      width: 24px;
+      height: 24px;
+      min-height: auto;
+      margin: 0;
+      accent-color: var(--teal-dark);
+    }
+
+    .check-toggle {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .check-toggle:hover { background: rgba(51, 133, 145, 0.1); }
+
+    .check-item-title {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      font-weight: 700;
+    }
+
+    .step-number { color: var(--teal-dark); font-size: 0.72rem; white-space: nowrap; }
+
+    .step-action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .action-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 8px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .action-badge.run { color: var(--success-text); background: var(--success-bg); }
+    .action-badge.codex { color: var(--info-text); background: var(--info-bg); }
+    .action-badge.platform { color: var(--warning-text); background: var(--warning-bg); }
+    .action-badge.check { color: var(--danger-text); background: var(--danger-bg); }
+    .action-badge.record { color: var(--teal-dark); background: rgba(51, 133, 145, 0.1); }
+    .action-badge.wait { color: var(--muted); background: var(--paper); }
+
+    .check-item ol {
+      margin: 8px 0 0;
+      padding-left: 22px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .check-item li + li { margin-top: 5px; }
+    .check-item p { margin: 8px 0 0; color: var(--muted); font-size: 0.8rem; }
+    .check-item .done-when { color: var(--ink); }
+
+    .copy-payload {
+      max-width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--ink);
+      color: var(--cream);
+      font: 0.75rem/1.55 var(--font);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .step-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .copy-button { min-height: 40px; padding-block: 7px; font-size: 0.76rem; }
+    .resource-link { min-height: 40px; display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; }
+    .check-item.is-done { background: var(--success-bg); }
+    .check-item.is-done .check-item-copy { opacity: 0.72; }
+    .check-item.is-done .check-item-title > span:first-child { text-decoration: line-through; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .metric {
+      min-height: 132px;
+      padding: 20px;
+      border: 1px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+
+    .workspace {
+      overflow: hidden;
+      border: 1px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .workspace-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .workspace-header h2 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2vw, 1.65rem);
+      letter-spacing: -0.04em;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--ink);
+      border-radius: 9px;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+    }
+
+    .button:hover { background: rgba(18, 47, 52, 0.07); }
+    .button.primary { color: var(--cream); background: var(--ink); }
+    .button.primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+    .button.danger { color: var(--danger-text); border-color: #ca8f84; }
+    .button.danger:hover { background: var(--danger-bg); }
+
+    .button svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      stroke-width: 1.8;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 220px));
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(212, 174, 140, 0.1);
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #a8b1b1;
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+
+    .table-wrap { width: 100%; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      background: var(--paper);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    tbody tr { transition: background-color 160ms ease; }
+    tbody tr:hover { background: rgba(51, 133, 145, 0.045); }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .ad-cell { width: 29%; }
+    .status-cell { width: 9%; }
+    .channel-cell { width: 12%; }
+    .numeric-cell { width: 9%; }
+    .decision-cell { width: 12%; }
+    .action-cell { width: 7%; text-align: right; }
+
+    .ad-name {
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .ad-meta {
+      display: block;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .number { font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 8px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .badge.draft,
+    .badge.ready,
+    .badge.waiting { color: var(--muted); background: #f0eee7; }
+    .badge.live,
+    .badge.track { color: var(--success-text); background: var(--success-bg); }
+    .badge.paused,
+    .badge.learning,
+    .badge.review { color: var(--warning-text); background: var(--warning-bg); }
+    .badge.finished,
+    .badge.rewrite { color: var(--info-text); background: var(--info-bg); }
+    .badge.replace { color: var(--danger-text); background: var(--danger-bg); }
+
+    .row-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--ink);
+      background: transparent;
+      transition: background-color 160ms ease, border-color 160ms ease;
+    }
+
+    .icon-button:hover { border-color: var(--ink); background: var(--cream); }
+    .icon-button svg { width: 18px; height: 18px; stroke-width: 1.8; }
+
+    .empty {
+      padding: 56px 24px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    dialog {
+      width: min(760px, calc(100% - 32px));
+      max-height: calc(100vh - 32px);
+      padding: 0;
+      overflow: auto;
+      border: 1px solid var(--ink);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--paper);
+      box-shadow: 0 32px 80px rgba(18, 47, 52, 0.24);
+    }
+
+    dialog::backdrop { background: rgba(18, 47, 52, 0.62); }
+
+    .dialog-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .dialog-header h2 { margin: 0; font-size: 1.35rem; letter-spacing: -0.04em; }
+
+    .dialog-body { padding: 24px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .form-help {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .form-section {
+      grid-column: 1 / -1;
+      margin: 8px 0 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .dialog-footer {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .footer-actions { display: flex; gap: 8px; margin-left: auto; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; gap: 24px; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .checklist-overview { grid-template-columns: 1fr; }
+      .campaign-grid,
+      .readiness-grid { grid-template-columns: 1fr; }
+      .campaign-card,
+      .readiness-card { border-right: 0; }
+      .campaign-card:nth-last-child(-n + 2),
+      .readiness-card:nth-last-child(-n + 2) { border-bottom: 1px solid var(--line); }
+      .campaign-card:last-child,
+      .readiness-card:last-child { border-bottom: 0; }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .filters .search-field { grid-column: 1 / -1; }
+      .channel-cell { display: none; }
+      .ad-cell { width: 34%; }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding-top: 8px; }
+      .topbar { align-items: flex-start; padding: 8px 0 12px; }
+      .nav { flex-direction: column; align-items: flex-end; }
+      .hero { padding-top: 48px; }
+      .summary { grid-template-columns: 1fr 1fr; }
+      .view-tabs { width: 100%; }
+      .view-tab { flex: 1; }
+      .guide-section-header { align-items: flex-start; flex-direction: column; }
+      .campaign-card dl { grid-template-columns: 1fr; gap: 4px; }
+      .campaign-card dd { margin-bottom: 10px; }
+      .checklist-toolbar { align-items: flex-start; flex-direction: column; }
+      .phase-header { align-items: flex-start; flex-direction: column; gap: 4px; }
+      .check-item { grid-template-columns: 44px minmax(0, 1fr); padding-inline: 12px; }
+      .check-item-title { align-items: flex-start; flex-direction: column; gap: 4px; }
+      .metric { min-height: 112px; padding: 16px; }
+      .metric-label { margin-bottom: 14px; }
+      .workspace-header { align-items: flex-start; flex-direction: column; }
+      .actions { width: 100%; justify-content: flex-start; }
+      .actions .button { flex: 1 1 140px; }
+      .filters { grid-template-columns: 1fr; }
+      .filters .search-field { grid-column: auto; }
+
+      table,
+      tbody,
+      tr,
+      td { display: block; width: 100%; }
+
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+      tbody tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+      tbody tr:last-child { border-bottom: 0; }
+      tbody td {
+        display: grid;
+        grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr);
+        gap: 12px;
+        align-items: center;
+        min-height: 44px;
+        padding: 8px 0;
+        border: 0;
+      }
+
+      tbody td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      tbody .ad-cell {
+        display: block;
+        padding: 4px 0 12px;
+        border-bottom: 1px dashed var(--line);
+      }
+
+      tbody .ad-cell::before { display: none; }
+      .channel-cell { display: grid; }
+      .action-cell { display: block; text-align: left; }
+      .action-cell::before { display: none; }
+      .row-actions { justify-content: flex-start; padding-top: 6px; }
+      .table-footer { align-items: flex-start; flex-direction: column; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full,
+      .form-section { grid-column: auto; }
+      .dialog-body { padding: 20px; }
+      .dialog-footer { align-items: stretch; flex-direction: column; }
+      .footer-actions { margin-left: 0; }
+      .footer-actions .button { flex: 1; }
+    }
+
+    @media (max-width: 460px) {
+      .summary { grid-template-columns: 1fr; }
+      h1 { font-size: clamp(2.5rem, 15vw, 4.1rem); }
+      .nav a { padding-inline: 8px; }
+      .dialog-header,
+      .dialog-footer { padding-inline: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="https://trelew.studio/">trelew.studio</a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="gallery.html">Creative gallery</a>
+        <a href="dashboard.html" aria-current="page">Ads dashboard</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Advertising control room</p>
+          <h1 id="page-title">Know what is working.</h1>
+        </div>
+        <div>
+          <p class="hero-copy">Track each ad from first idea to qualified inquiry. The starter table contains two first-launch campaign rows and 12 creative concepts for Shopify, migrations and reporting portals.</p>
+          <span class="sync-note" id="save-state">Saved in this browser</span>
+        </div>
+      </section>
+
+      <div class="view-tabs" role="tablist" aria-label="Dashboard views">
+        <button class="view-tab" id="results-tab" type="button" role="tab" aria-controls="results-panel" aria-selected="true">Results</button>
+        <button class="view-tab" id="checklist-tab" type="button" role="tab" aria-controls="checklist-panel" aria-selected="false">Launch checklist</button>
+      </div>
+
+      <div id="results-panel" role="tabpanel" aria-labelledby="results-tab">
+
+      <section class="summary" aria-label="Performance summary">
+        <article class="metric">
+          <span class="metric-label">Live ads</span>
+          <strong class="metric-value number" id="live-total">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Total spend</span>
+          <strong class="metric-value number" id="spend-total">€0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Qualified inquiries</span>
+          <strong class="metric-value number" id="lead-total">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Cost / qualified inquiry</span>
+          <strong class="metric-value number" id="cpl-total">—</strong>
+        </article>
+      </section>
+
+      <section class="workspace" aria-labelledby="ads-heading">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Campaign table</p>
+            <h2 id="ads-heading">Ads and results</h2>
+          </div>
+          <div class="actions">
+            <button class="button" id="export-button" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export CSV
+            </button>
+            <button class="button primary" id="add-button" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+              Add ad
+            </button>
+          </div>
+        </header>
+
+        <div class="filters" aria-label="Table filters">
+          <label class="search-field">
+            <span class="field-label">Search ads</span>
+            <input id="search-filter" type="search" placeholder="Name, market, concept…">
+          </label>
+          <label>
+            <span class="field-label">Status</span>
+            <select id="status-filter">
+              <option value="all">All statuses</option>
+              <option>Draft</option>
+              <option>Ready</option>
+              <option>Live</option>
+              <option>Paused</option>
+              <option>Finished</option>
+            </select>
+          </label>
+          <label>
+            <span class="field-label">Market</span>
+            <select id="market-filter">
+              <option value="all">All markets</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Trelew advertising campaigns and performance results</caption>
+            <thead>
+              <tr>
+                <th class="ad-cell" scope="col">Ad</th>
+                <th class="status-cell" scope="col">Status</th>
+                <th class="channel-cell" scope="col">Channel</th>
+                <th class="numeric-cell" scope="col">Spend</th>
+                <th class="numeric-cell" scope="col">Clicks</th>
+                <th class="numeric-cell" scope="col">Qualified</th>
+                <th class="numeric-cell" scope="col">CTR</th>
+                <th class="numeric-cell" scope="col">CPL</th>
+                <th class="decision-cell" scope="col">Signal</th>
+                <th class="action-cell" scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="ads-body"></tbody>
+          </table>
+          <div class="empty" id="empty-state" hidden>No ads match these filters.</div>
+        </div>
+
+        <footer class="table-footer">
+          <span id="row-count">0 ads</span>
+          <span>Signal uses target CPL, qualified inquiries and a 2,000-impression hook check.</span>
+          <button class="button" id="reset-button" type="button">Restore suggestions</button>
+        </footer>
+      </section>
+      </div>
+
+      <section class="guide-stack" id="checklist-panel" role="tabpanel" aria-labelledby="checklist-tab" hidden>
+        <div class="checklist-overview">
+          <article class="guide-intro">
+            <p class="eyebrow">Your first campaign</p>
+            <h2>No prior advertising knowledge assumed.</h2>
+            <p>Work from top to bottom. Every card tells you whether to run a command, send a prepared message to Codex, or complete a named platform task. Copy the supplied text exactly. Mark a card done only when its evidence sentence is true.</p>
+          </article>
+          <aside class="progress-card" aria-label="Checklist progress">
+            <span class="metric-label">Launch readiness</span>
+            <strong class="progress-number" id="checklist-progress-text">0 of 0 done</strong>
+            <progress id="checklist-progress" max="100" value="0">0%</progress>
+            <p class="next-step">Do this next<strong id="next-checklist-step">Loading checklist…</strong></p>
+          </aside>
+        </div>
+
+        <section class="guide-section" aria-labelledby="campaign-plan-heading">
+          <header class="guide-section-header">
+            <div>
+              <p class="eyebrow">Specific campaign plan</p>
+              <h2 id="campaign-plan-heading">What to run and when to judge it</h2>
+            </div>
+            <p>Start with the two cards marked “First pilot”. Later campaigns are deliberately gated so a beginner does not spread a small budget across too many platforms.</p>
+          </header>
+          <p class="allocation-note"><strong>From the research workbook:</strong> the mature allocation is Google Search 45%, Microsoft Search 8%, LinkedIn 18%, Meta retargeting 15%, Meta cold 7%, YouTube 3%, TikTok 2%, Pinterest 1% and Reddit 1%. Do not activate all of these on day one.</p>
+          <div class="campaign-grid" id="campaign-plan"></div>
+        </section>
+
+        <section class="guide-section" aria-labelledby="code-readiness-heading">
+          <header class="guide-section-header">
+            <div>
+              <p class="eyebrow">Website code audit</p>
+              <h2 id="code-readiness-heading">What trelew.studio can measure</h2>
+            </div>
+            <p>Audited against the current <code>~/trelew-workspace/homepage</code> source. “Verify” means the code exists but the production Vercel setting still needs a human check.</p>
+          </header>
+          <div class="readiness-grid" id="code-readiness"></div>
+        </section>
+
+        <section class="guide-section" aria-labelledby="next-steps-heading">
+          <header class="guide-section-header">
+            <div>
+              <p class="eyebrow">Beginner checklist</p>
+              <h2 id="next-steps-heading">From zero to a measured campaign</h2>
+            </div>
+            <p>Your progress is saved in this browser. Commands and Codex messages have copy buttons so you do not need to rewrite them.</p>
+          </header>
+          <div class="checklist-toolbar">
+            <span id="checklist-count">0 steps</span>
+            <button class="button" id="reset-checklist-button" type="button">Reset checklist</button>
+          </div>
+          <div id="checklist-phases"></div>
+          <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="ad-dialog" aria-labelledby="dialog-title">
+    <form id="ad-form" method="dialog">
+      <header class="dialog-header">
+        <h2 id="dialog-title">Edit ad</h2>
+        <button class="icon-button" id="close-dialog" type="button" aria-label="Close ad editor">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <div class="dialog-body">
+        <input id="ad-id" name="id" type="hidden">
+        <div class="form-grid">
+          <label class="field full">
+            <span class="field-label">Ad name</span>
+            <input id="ad-name" name="name" required maxlength="120">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Offer</span>
+            <input id="ad-offer" name="offer" required maxlength="80">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Market</span>
+            <input id="ad-market" name="market" required maxlength="60">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Channel</span>
+            <input id="ad-channel" name="channel" required maxlength="80">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Status</span>
+            <select id="ad-status" name="status">
+              <option>Draft</option>
+              <option>Ready</option>
+              <option>Live</option>
+              <option>Paused</option>
+              <option>Finished</option>
+            </select>
+          </label>
+
+          <label class="field full">
+            <span class="field-label">Concept</span>
+            <input id="ad-concept" name="concept" required maxlength="160">
+          </label>
+
+          <label class="field full">
+            <span class="field-label">Landing page</span>
+            <input id="ad-url" name="url" type="url" placeholder="https://trelew.studio/…">
+          </label>
+
+          <p class="form-section">Campaign plan</p>
+
+          <label class="field full">
+            <span class="field-label">Target audience</span>
+            <textarea id="ad-audience" name="audience" maxlength="600" placeholder="Country, role, company and exclusions…"></textarea>
+          </label>
+
+          <label class="field full">
+            <span class="field-label">How long to run</span>
+            <input id="ad-run-plan" name="runPlan" maxlength="220" placeholder="30 days or until the test cap is reached">
+          </label>
+
+          <label class="field full">
+            <span class="field-label">Budget plan</span>
+            <input id="ad-budget-plan" name="budgetPlan" maxlength="260" placeholder="Daily budget and total test cap">
+          </label>
+
+          <label class="field full">
+            <span class="field-label">How to validate it</span>
+            <textarea id="ad-validation" name="validation" maxlength="600" placeholder="Success target and pause rule…"></textarea>
+          </label>
+
+          <p class="form-section">Performance</p>
+
+          <label class="field">
+            <span class="field-label">Spend (€)</span>
+            <input id="ad-spend" name="spend" type="number" min="0" step="0.01" inputmode="decimal">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Target CPL (€)</span>
+            <input id="ad-target-cpl" name="targetCpl" type="number" min="0" step="0.01" inputmode="decimal">
+            <span class="form-help">Your maximum cost per qualified inquiry.</span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Impressions</span>
+            <input id="ad-impressions" name="impressions" type="number" min="0" step="1" inputmode="numeric">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Clicks</span>
+            <input id="ad-clicks" name="clicks" type="number" min="0" step="1" inputmode="numeric">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Qualified inquiries</span>
+            <input id="ad-leads" name="qualifiedLeads" type="number" min="0" step="1" inputmode="numeric">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Sales</span>
+            <input id="ad-sales" name="sales" type="number" min="0" step="1" inputmode="numeric">
+          </label>
+
+          <label class="field full">
+            <span class="field-label">Notes</span>
+            <textarea id="ad-notes" name="notes" maxlength="500" placeholder="Audience, hook, dates, what changed…"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <footer class="dialog-footer">
+        <button class="button danger" id="delete-button" type="button">Delete ad</button>
+        <div class="footer-actions">
+          <button class="button" id="cancel-button" type="button">Cancel</button>
+          <button class="button primary" type="submit">Save ad</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = 'trelew-ads-dashboard-v1';
+    const CHECKLIST_KEY = 'trelew-ads-launch-checklist-v2';
+    const landingPages = {
+      shopifyEs: 'https://trelew.studio/es/shopify',
+      dashboardsEs: 'https://trelew.studio/es/dashboards-consultorias',
+      migrationIe: 'https://trelew.studio/ie/shopify-migration',
+      portalsUk: 'https://trelew.studio/uk/client-reporting-portals'
+    };
+
+    const campaignPlan = [
+      {
+        status: 'First pilot', statusClass: 'live', name: 'Google Search · Shopify Spain',
+        platform: 'Google Search responsive search ads',
+        target: 'People in Spain searching in Spanish for a Shopify agency, Shopify developer, tienda Shopify precio or ecommerce website. Exclude jobs, courses, free, templates and DIY searches.',
+        destination: landingPages.shopifyEs,
+        creative: 'One intent group per theme. Use fixed scope, €6,500, planned 3 weeks, up to 60 products and the live demo. Supply 8–15 distinct headlines and 3–4 descriptions.',
+        run: '30 days, or until the campaign spends €390—whichever happens first.',
+        budget: 'Start near €13/day. €390 is the initial test cap, equal to 2× the €195 target CPL.',
+        working: 'At least one qualified inquiry at €195 or less. Search terms are relevant and people reach or start the form.',
+        stop: 'Pause and fix after €390 with no qualified inquiry. If clicks are relevant but nobody starts the form, fix the landing message before buying more clicks.'
+      },
+      {
+        status: 'Second wave', statusClass: 'ready', name: 'Google Search · Shopify migration Ireland',
+        platform: 'Google Search responsive search ads',
+        target: 'People in Ireland searching for Shopify migration, WooCommerce to Shopify, Magento to Shopify or Shopify migration agency. English language; exclude jobs, tutorials and free tools.',
+        destination: landingPages.migrationIe,
+        creative: 'Lead with catalogue mapping, up to 100 supplied redirects, purchase-path testing, €10,000 and planned 5 weeks. Never promise zero ranking loss.',
+        run: '30–45 days, or until €600 has been spent.',
+        budget: 'Start near €20/day. €600 is the initial test cap, equal to 2× the €300 target CPL.',
+        working: 'Qualified inquiries cost €300 or less and mention a real store, platform or migration date.',
+        stop: 'Pause after €600 with no qualified inquiry, or sooner if search terms are mostly unrelated. Add negatives before raising the budget.'
+      },
+      {
+        status: 'Second wave', statusClass: 'ready', name: 'Google Search · Dashboards Spain',
+        platform: 'Google Search responsive search ads',
+        target: 'Spanish consultancies and operations teams searching for dashboard development, client reporting portal, custom Power BI alternative or reporting automation. Exclude courses, jobs and templates.',
+        destination: landingPages.dashboardsEs,
+        creative: 'Use the repeated-report pain, one defined source, role-based access, CSV export, €12,500 and planned 3 weeks.',
+        run: '30–45 days, or until €750 has been spent.',
+        budget: 'Start near €25/day. €750 is the initial test cap, equal to 2× the €375 target CPL.',
+        working: 'Qualified inquiries cost €375 or less and describe a repeated report, source data and intended users.',
+        stop: 'Pause after €750 with no qualified inquiry. If inquiries are vague, tighten keywords and put the reporting requirements in the ad.'
+      },
+      {
+        status: 'First pilot', statusClass: 'live', name: 'LinkedIn · UK reporting portals',
+        platform: 'LinkedIn Sponsored Content + native Lead Gen Form',
+        target: 'UK CFO, COO, Head of Operations, Client Services, RevOps, Data or BI roles at 20–500 employee consultancies, agencies, professional-services firms and multi-location businesses.',
+        destination: 'Use a native LinkedIn form first; include the website page as the proof link.',
+        creative: 'Test a 1200×627 quantified pain card and a 15–30 second dashboard walkthrough. Ask current reporting method, data source, number of client users and target timing.',
+        run: '30–45 days. Do not make daily changes during the first 7 days unless tracking or targeting is wrong.',
+        budget: 'Start near €25/day with a €750 cap. The workbook cites roughly £136–£175 public CPL benchmarks for UK professional services/consulting.',
+        working: 'Prefer 2+ qualified inquiries; planning CPL is €375 or less. A cheap form fill is not success if the company has no reporting problem or budget.',
+        stop: 'Pause after €750 with no qualified inquiry. If forms are plentiful but poor, add qualifying questions before changing the creative.'
+      },
+      {
+        status: 'After traffic', statusClass: 'ready', name: 'Meta · All-offer retargeting',
+        platform: 'Facebook and Instagram Feed, Stories and Reels',
+        target: '30/90/180-day website visitors, demo viewers, Instagram engagers and known leads who have not converted. Separate country and language; exclude clients.',
+        destination: 'Send each ad back to the exact page originally promoted.',
+        creative: '4:5 scope card, 9:16 working demo and one founder/explanation video. Warm ads may show price, delivery time and handover.',
+        run: 'Always-on in 30-day review blocks, but only after the audience is large enough to deliver.',
+        budget: 'Start at €5–€10/day, capped at €300 for the first 30 days. Do not force spend into a tiny audience.',
+        working: 'Qualified CPL stays below the target for that package and frequency does not climb while inquiries remain at zero.',
+        stop: 'Refresh creative when the same people repeatedly see it without clicking. Pause any offer after spending 2× its target CPL with no qualified inquiry.'
+      },
+      {
+        status: 'After tracking', statusClass: 'ready', name: 'Meta cold · Shopify Spain',
+        platform: 'Instagram and Facebook Reels/Feed',
+        target: 'Spain, Spanish language, founders and ecommerce operators aged 25–54. Start broad with ecommerce signals; use lookalikes only after Trelew has enough real leads. Exclude warm visitors and clients.',
+        destination: landingPages.shopifyEs,
+        creative: 'Three concepts: problem mirror, live storefront walkthrough and fixed-scope card. Produce 9:16 and 4:5 versions.',
+        run: '26–30 days. Keep each concept unchanged until it reaches about 2,000 impressions unless something is broken.',
+        budget: 'Start near €15/day with a €390 test cap shared across the three concepts.',
+        working: 'Qualified CPL is €195 or less. A concept with at least 0.5% CTR earns a landing-page review before being discarded.',
+        stop: 'Rewrite a hook below 0.5% CTR after 2,000 impressions. Pause the campaign at €390 with no qualified inquiry.'
+      },
+      {
+        status: 'Later', statusClass: 'waiting', name: 'Microsoft Search · Proven Google campaigns',
+        platform: 'Microsoft Advertising search ads',
+        target: 'Import only Google keyword groups that already produced qualified inquiries. Keep the same country, language and negative-keyword separation.',
+        destination: 'Use the winning Google landing page.',
+        creative: 'Reuse the winning search offer and adapt extensions. Do not import weak campaigns.',
+        run: '30 days after Google tracking and lead quality are stable.',
+        budget: 'Use about 10–20% of the proven Google campaign’s daily budget. The workbook allocates 8% of mature spend here.',
+        working: 'Qualified CPL is no worse than the corresponding Google campaign and lead quality is comparable.',
+        stop: 'Pause if it only produces cheap, unqualified clicks or if UET/offline measurement has not been configured.'
+      },
+      {
+        status: 'Later experiment', statusClass: 'waiting', name: 'YouTube or TikTok · Remarketing/learning',
+        platform: 'YouTube intent remarketing first; TikTok Search/Spark only as a Spain Shopify test',
+        target: 'YouTube: site visitors and custom intent from proven search terms. TikTok: Spanish founders and ecommerce operators searching for an exact service.',
+        destination: 'Use the matching Shopify or dashboard page, never the general homepage.',
+        creative: '15–30 second 9:16 demo with the product visible immediately, captions and one CTA.',
+        run: '2–4 weeks only after search and retargeting are measured.',
+        budget: 'Workbook allocation: YouTube 3% and TikTok 2% of mature spend. Treat these as capped learning tests.',
+        working: 'They create incremental qualified inquiries or assist conversions at an acceptable total CPL—not merely cheap video views.',
+        stop: 'Do not launch while core conversion tracking is unverified or while search campaigns still lack enough budget.'
+      }
+    ];
+
+    const codeReadiness = [
+      { state: 'ready', label: 'Ready · landing pages', text: 'All four ad pages render the shared <code>LandingPageTracker</code>, tracked CTA/demo links and the campaign contact form.' },
+      { state: 'ready', label: 'Ready · attribution', text: '<code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>utm_term</code>, <code>utm_content</code>, GCLID, GBRAID, WBRAID and FBCLID are captured and stored with an inquiry.' },
+      { state: 'ready', label: 'Ready · Google and Meta', text: 'Consent-aware GA4, Google Ads lead conversion and Meta Pixel events exist. Lead submissions use a unique inquiry ID for deduplication.' },
+      { state: 'ready', label: 'Ready · lead lifecycle', text: 'The code supports qualified lead, call booked, proposal sent and client won events. Calendly can record a booked call when its webhook is configured.' },
+      { state: 'verify', label: 'Verify · Vercel production', text: 'The code depends on production environment variables for GA4, Google Ads, Meta CAPI, Resend, Upstash and lifecycle secrets. Only <code>.env.example</code> exists locally, so deployed values must be checked in Vercel.' },
+      { state: 'gap', label: 'Gap · LinkedIn website tracking', text: 'There is no LinkedIn Insight Tag, LinkedIn consent option or CSP permission. Use a native LinkedIn Lead Gen Form first, or implement all three before optimising LinkedIn for website conversions.' },
+      { state: 'gap', label: 'Gap · Google offline conversions', text: 'Google click IDs are stored, but qualified leads and won clients are not uploaded directly to Google Ads. Add offline conversion upload before using value-based bidding.' },
+      { state: 'later', label: 'Later · secondary channels', text: 'Microsoft UET, TikTok Pixel, Pinterest Tag and Reddit Pixel are not present. That is acceptable while these channels remain later experiments.' }
+    ];
+
+    const checklistPhases = [
+      {
+        id: 'plan', title: '1. Lock the first launch',
+        steps: [
+          {
+            id: 'pilot-order', title: 'Use these two campaigns first', action: 'RECORD THIS', actionStyle: 'record',
+            instructions: [
+              'First campaign: Google Search for Shopify Spain.',
+              'Second campaign: LinkedIn Lead Gen for UK client reporting portals.',
+              'Do not launch Meta cold ads, migration Ireland, dashboard Spain or secondary channels during the first week.'
+            ],
+            doneWhen: 'Only those two campaigns are marked as the first launch in the Results tab.'
+          },
+          {
+            id: 'budget-limit', title: 'Copy the exact limits into the Results tab', action: 'COPY THESE NUMBERS', actionStyle: 'record',
+            instructions: [
+              'Open the Results tab and edit the matching Google and LinkedIn rows.',
+              'Paste these limits into their budget and target CPL fields.',
+              'Do not raise a limit during the first test.'
+            ],
+            copyLabel: 'Copy limits',
+            copyText: `Google Search Shopify Spain: €13 per day, €390 total cap, €195 target qualified CPL.
+LinkedIn UK reporting portals: €25 per day, €750 total cap, €375 target qualified CPL.
+Combined maximum loss: €1,140.`,
+            doneWhen: 'The Results tab shows €390 and €750 test caps and the correct target CPL for each campaign.'
+          },
+          {
+            id: 'qualified-definition', title: 'Use one rule for qualified inquiries', action: 'COPY THIS RULE', actionStyle: 'record',
+            instructions: ['Paste this rule into the notes of both first-launch campaigns. Use it every time a form arrives.'],
+            copyLabel: 'Copy qualification rule',
+            copyText: 'Count an inquiry as qualified only when it comes from a real business, requests the advertised service, describes a problem Trelew can solve, and has a plausible budget or timeline. Spam, students, job seekers and research-only messages do not count.',
+            doneWhen: 'The same written qualification rule is saved on both campaign rows.'
+          },
+          {
+            id: 'response-owner', title: 'Assign one human to every paid inquiry', action: 'WRITE THIS DOWN', actionStyle: 'record',
+            instructions: [
+              'Choose one person who checks the inquiry inbox every business day.',
+              'Write the person, inbox and backup person in both campaign notes.',
+              'Reply within 24 hours with one next step: book a call or request missing project information.'
+            ],
+            doneWhen: 'Both campaign rows name an owner, inbox and backup person.'
+          }
+        ]
+      },
+      {
+        id: 'organic', title: '2. Fill the empty social profiles',
+        steps: [
+          {
+            id: 'video-tools', title: 'Install the local Reel encoder', action: 'RUN THIS COMMAND', actionStyle: 'run',
+            instructions: ['Open a terminal, paste the command and wait for a PASS message. This is a one-time setup.'],
+            copyLabel: 'Copy command',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds && ./setup-video-tools.sh`,
+            doneWhen: 'The terminal prints PASS: repo-local Reel encoder installed.'
+          },
+          {
+            id: 'organic-first-set', title: 'Generate four organic launch sets', action: 'RUN THESE COMMANDS', actionStyle: 'run',
+            instructions: [
+              'Paste the complete block into a terminal.',
+              'Let each command finish before the next one starts.',
+              'Each run creates Instagram and Facebook images, 20-second Reels and LinkedIn images.'
+            ],
+            copyLabel: 'Copy all four commands',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds
+./post.sh --brief "Spanish launch post showing the practical Shopify service for businesses in Spain. Use only facts from https://trelew.studio/es/shopify and send the CTA there." --platforms ig,fb,li --out "out/$(date +%F)/organic-shopify-es"
+./post.sh --brief "Spanish launch post showing how Trelew replaces repeated consultancy reporting work with a client dashboard. Use only facts from https://trelew.studio/es/dashboards-consultorias and send the CTA there." --platforms ig,fb,li --out "out/$(date +%F)/organic-dashboards-es"
+./post.sh --brief "English launch post explaining a planned Shopify migration for an Irish business. Use only facts from https://trelew.studio/ie/shopify-migration and send the CTA there." --platforms ig,fb,li --out "out/$(date +%F)/organic-migration-ie"
+./post.sh --brief "English launch post showing the repeated reporting problem solved by a client portal for a UK professional-services firm. Use only facts from https://trelew.studio/uk/client-reporting-portals and send the CTA there." --platforms ig,fb,li --out "out/$(date +%F)/organic-portals-uk"`,
+            doneWhen: 'All four commands end with passing image and Reel validation.'
+          },
+          {
+            id: 'organic-review', title: 'Have Codex inspect every generated post and Reel', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Open Codex in this repository, paste the message and wait for its review or corrected runs.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `Review the newest organic-shopify-es, organic-dashboards-es, organic-migration-ie and organic-portals-uk runs under /home/eva/trelew-workspace/TrelewSocialMediaAds/out. Check every image, 20-second Reel, caption, spoken line, CTA and UTM against its linked Trelew landing page. Check phone readability, Meta safe zones, Trelew brand rules and the Unslop skill. If a factual, language, layout or technical problem exists, create a corrected sibling run ending in -revision. Do not overwrite the original. Return one short table with Publish or Use revision for every platform.`,
+            doneWhen: 'Codex gives a Publish or Use revision decision for Instagram, Facebook and LinkedIn for all four services.'
+          },
+          {
+            id: 'publish-organic', title: 'Schedule the approved organic posts', action: 'DO THIS IN THE SOCIAL ACCOUNTS', actionStyle: 'platform',
+            instructions: [
+              'In Meta Business Suite, schedule the approved Instagram and Facebook versions two days apart at 10:00 Europe/Madrid.',
+              'On the Trelew LinkedIn company page, schedule the approved LinkedIn versions on the same dates.',
+              'Use the caption and link from each matching post.json. Do not reuse Spanish copy for Ireland or the UK.'
+            ],
+            resource: { label: 'Open Meta Business Suite', url: 'https://business.facebook.com/' },
+            doneWhen: 'At least four approved posts are scheduled on Facebook, Instagram and LinkedIn.'
+          }
+        ]
+      },
+      {
+        id: 'creative', title: '3. Create the first paid creative',
+        steps: [
+          {
+            id: 'meta-ad-draft', title: 'Create the Shopify Spain presenter-ad package', action: 'RUN THIS COMMAND', actionStyle: 'run',
+            instructions: ['This creates the Spanish script and production package without spending video credits.'],
+            copyLabel: 'Copy command',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds && ./ad.sh --brief "A Spanish Shopify merchant is losing time coordinating theme, catalogue, payments and launch checks. Explain the problem and how Trelew provides a defined Shopify build and handover." --landing-url https://trelew.studio/es/shopify --platforms ig,fb --out out/ads/shopify-es/problem-mirror-a`,
+            doneWhen: 'out/ads/shopify-es/problem-mirror-a contains a validated ad.json and video-prompt.txt.'
+          },
+          {
+            id: 'meta-ad-review', title: 'Review the exact script before paying for video', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Paste this message in Codex. Do not render until the answer says READY TO RENDER.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `Review /home/eva/trelew-workspace/TrelewSocialMediaAds/out/ads/shopify-es/problem-mirror-a/ad.json and video-prompt.txt against https://trelew.studio/es/shopify, the Trelew brand rules and skills/unslop/SKILL.md. Confirm the Spanish sounds natural, every claim exists on the page, the presenter is not framed as a client, and the script can be delivered in 30 seconds. Fix the two files in place if needed, run validate_ad.py with the correct arguments, and finish with either READY TO RENDER or BLOCKED followed by the exact reason. Do not call HeyGen.`,
+            doneWhen: 'Codex finishes with READY TO RENDER and validation passes.'
+          },
+          {
+            id: 'heygen-setup', title: 'Replace the exposed key and choose the presenter and voices', action: 'DO THIS IN HEYGEN', actionStyle: 'platform',
+            instructions: [
+              'Create or open your HeyGen account and confirm API access and pricing.',
+              'Revoke the API key that was previously stored in ad.sh. Create a new key and do not paste it into Codex.',
+              'Choose one commercially licensed adult white male avatar. Do not use a real person without permission.',
+              'Choose a Spain Spanish voice and a British English voice. An Irish English voice is optional.',
+              'Copy the replacement API key and the chosen avatar and voice IDs. You need them in the next step.'
+            ],
+            resource: { label: 'Open HeyGen', url: 'https://app.heygen.com/' },
+            doneWhen: 'The old API key is revoked and the replacement key, avatar ID and Spanish and English voice IDs are ready to paste.'
+          },
+          {
+            id: 'heygen-local-config', title: 'Save the new HeyGen settings safely', action: 'RUN THIS COMMAND', actionStyle: 'run',
+            instructions: [
+              'Paste the command into a terminal.',
+              'When asked, paste the replacement key and IDs from the previous step.',
+              'The key input stays hidden. The script saves everything in an ignored owner-only file.'
+            ],
+            copyLabel: 'Copy setup command',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds && ./setup-heygen.sh`,
+            doneWhen: 'The terminal prints PASS: HeyGen settings saved.'
+          },
+          {
+            id: 'meta-ad-render', title: 'Render the reviewed 30-second ad', action: 'RUN THIS COMMAND', actionStyle: 'run',
+            instructions: ['Run this only after the previous step says READY TO RENDER. The command uses the reviewed files and makes a paid HeyGen request.'],
+            copyLabel: 'Copy render command',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds && ./ad.sh --brief "Use the reviewed Shopify Spain package." --landing-url https://trelew.studio/es/shopify --platforms ig,fb --out out/ads/shopify-es/problem-mirror-a --render --use-existing`,
+            doneWhen: 'The terminal reports that ad.mp4 is 1080x1920 and exactly 30 seconds.'
+          },
+          {
+            id: 'search-copy', title: 'Create the Google Search assets', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Paste this message in Codex. It creates copy for the first paid campaign without publishing anything.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `In /home/eva/trelew-workspace/TrelewSocialMediaAds, create out/ads/google/shopify-es/assets.md for the first Google Search campaign. Read trelew_ad_research_2026.xlsm, the local homepage source for /es/shopify and skills/unslop/SKILL.md. Produce three tightly separated intent groups, 12 distinct Spanish headlines per group with a maximum of 30 characters, four descriptions per group with a maximum of 90 characters, sitelinks, callouts, exact-match and phrase-match starter keywords, and a shared negative-keyword list. Use only landing-page facts. Add the final UTM URL. Validate every character count and finish with READY FOR GOOGLE ADS. Do not open, publish or fund a campaign.`,
+            doneWhen: 'assets.md exists and Codex finishes with READY FOR GOOGLE ADS.'
+          },
+          {
+            id: 'linkedin-files', title: 'Create the LinkedIn UK proof assets', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Paste this message in Codex. The assets remain local drafts.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `In /home/eva/trelew-workspace/TrelewSocialMediaAds, create out/ads/linkedin-uk/reporting-portals-a. Read https://trelew.studio/uk/client-reporting-portals from the local homepage source, the Trelew brand rules and skills/unslop/SKILL.md. Create a 1200x627 single-image paid proof card, LinkedIn primary text, headline, Lead Gen Form intro, privacy copy and thank-you text. Also create a captioned 30-second 1080x1920 screen-led demonstration using the repo-local encoder. Show only documented interface or process proof and do not invent client data. Validate the files and finish with READY FOR LINKEDIN REVIEW. Do not publish anything.`,
+            doneWhen: 'The LinkedIn folder contains validated image, video and form copy, and Codex says READY FOR LINKEDIN REVIEW.'
+          },
+          {
+            id: 'claims-review', title: 'Run one final claims and language check', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Run this after the Google, LinkedIn and Meta files exist.'],
+            copyLabel: 'Copy final-review message',
+            copyText: `Audit out/ads/google/shopify-es, out/ads/linkedin-uk/reporting-portals-a and out/ads/shopify-es/problem-mirror-a. Compare every price, timeframe, scope item, result claim, language, CTA and destination with the matching Trelew landing page. Check that UK copy does not present euro pricing without explanation and that no asset promises guaranteed revenue, zero SEO loss or a guaranteed delivery date. Fix local draft files if needed. Return a final launch-assets table with PASS or BLOCKED and the exact file path for every asset. Do not publish or spend money.`,
+            doneWhen: 'Every first-launch asset has a PASS decision and an exact file path.'
+          }
+        ]
+      },
+      {
+        id: 'accounts', title: '4. Create and secure the platform accounts',
+        steps: [
+          {
+            id: 'google-account', title: 'Finish Google Ads and GA4 setup', action: 'DO THIS IN GOOGLE', actionStyle: 'platform',
+            instructions: [
+              'Open Google Ads with the Trelew business account. Set billing country correctly, currency to EUR and timezone to Europe/Madrid.',
+              'Open GA4 Admin, confirm the trelew.studio web stream and link it to this Google Ads account.',
+              'Turn on auto-tagging.',
+              'Create one website conversion for a submitted inquiry and save its AW ID and conversion label.'
+            ],
+            resource: { label: 'Open Google Ads', url: 'https://ads.google.com/' },
+            doneWhen: 'Billing works, GA4 is linked, auto-tagging is on, and the AW ID and conversion label are saved.'
+          },
+          {
+            id: 'meta-business', title: 'Finish Meta Business and Pixel setup', action: 'DO THIS IN META', actionStyle: 'platform',
+            instructions: [
+              'Add the Trelew Facebook Page, Instagram account and ad account to one Business Portfolio.',
+              'Add a valid payment method but do not launch a campaign.',
+              'Open Events Manager and verify that Pixel 1581916620148534 belongs to Trelew.',
+              'Do not create a second Pixel unless the existing ID is proven wrong.'
+            ],
+            resource: { label: 'Open Meta Business', url: 'https://business.facebook.com/' },
+            doneWhen: 'Both identities, the ad account, payment method and Pixel 1581916620148534 are visible in the correct business.'
+          },
+          {
+            id: 'linkedin-account', title: 'Finish LinkedIn Campaign Manager setup', action: 'DO THIS IN LINKEDIN', actionStyle: 'platform',
+            instructions: [
+              'Create or open the Trelew ad account.',
+              'Attach the Trelew company page and add billing.',
+              'Confirm you can create Sponsored Content and a native Lead Gen Form.',
+              'Do not launch yet.'
+            ],
+            resource: { label: 'Open LinkedIn Campaign Manager', url: 'https://www.linkedin.com/campaignmanager/' },
+            doneWhen: 'A paused draft campaign can select the Trelew page and native Lead Gen Form objective.'
+          },
+          {
+            id: 'account-security', title: 'Secure everyone who can spend money', action: 'CHECK THIS', actionStyle: 'check',
+            instructions: [
+              'Open administrator access in Google, Meta and LinkedIn.',
+              'Remove unknown or unused administrators.',
+              'Require two-factor authentication for every remaining administrator.'
+            ],
+            doneWhen: 'Every administrator is known and has two-factor authentication enabled.'
+          }
+        ]
+      },
+      {
+        id: 'tracking', title: '5. Prove that tracking works before launch',
+        steps: [
+          {
+            id: 'code-audit-request', title: 'Get the exact production-variable checklist', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Paste this message in Codex before opening Vercel.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `Read /home/eva/trelew-workspace/homepage without changing it. Produce a short production advertising checklist for trelew.studio with the exact Vercel environment variable names required for GA4, Google Ads conversion ID and label, Meta Pixel and CAPI, Resend, Upstash, site URL, lead lifecycle and Calendly. For each variable say Required now, Later or Not used. Then list the exact browser tests for the four advertising landing pages. Do not reveal secret values and do not deploy anything.`,
+            doneWhen: 'Codex returns exact environment-variable names and exact browser tests without changing the homepage repository.'
+          },
+          {
+            id: 'vercel-env', title: 'Set and redeploy the production environment', action: 'DO THIS IN VERCEL', actionStyle: 'platform',
+            instructions: [
+              'Open the homepage project and select Settings, then Environment Variables.',
+              'Compare Production against the exact checklist Codex returned.',
+              'Add missing values using your password manager. Never paste secrets into Codex.',
+              'Redeploy Production after changing any NEXT_PUBLIC value.'
+            ],
+            resource: { label: 'Open Vercel dashboard', url: 'https://vercel.com/dashboard' },
+            doneWhen: 'Every Required now variable exists in Production and the latest deployment was built afterward.'
+          },
+          {
+            id: 'forms-and-utm', title: 'Submit all four forms and one tagged form', action: 'DO THIS IN A PRIVATE BROWSER', actionStyle: 'platform',
+            instructions: [
+              'Submit a test inquiry on /es/shopify, /es/dashboards-consultorias, /ie/shopify-migration and /uk/client-reporting-portals.',
+              'Use a unique email subject or name containing TEST and the page name.',
+              'Visit https://trelew.studio/es/shopify?utm_source=google&utm_medium=cpc&utm_campaign=tracking_test&utm_content=check and submit one more test.',
+              'Confirm all emails arrive and the tagged inquiry contains the four exact UTM values.'
+            ],
+            doneWhen: 'Five test inquiries arrive, identify the correct page, and the tagged inquiry contains all four UTM values.'
+          },
+          {
+            id: 'event-tests', title: 'Verify Google and Meta events exactly once', action: 'CHECK THIS IN ANALYTICS', actionStyle: 'check',
+            instructions: [
+              'Allow Google Analytics, Google Ads and Meta in the website privacy controls.',
+              'Keep GA4 Realtime, Google Tag Assistant and Meta Test Events open.',
+              'Visit one target page and submit one labelled test inquiry.',
+              'Confirm PageView or page_view and Lead or lead appear once, not twice.'
+            ],
+            doneWhen: 'GA4, Google Ads diagnostics and Meta Test Events each show one visit and one lead with no duplicate conversion.'
+          },
+          {
+            id: 'tracking-evidence-folder', title: 'Create one folder for launch evidence', action: 'RUN THIS COMMAND', actionStyle: 'run',
+            instructions: ['Run the command, then save screenshots of Vercel, GA4, Google diagnostics, Meta Test Events and received emails in the new dated folder.'],
+            copyLabel: 'Copy command',
+            copyText: `cd /home/eva/trelew-workspace/TrelewSocialMediaAds && mkdir -p "out/launch-evidence/$(date +%F)"`,
+            doneWhen: 'The dated folder contains screenshots proving every tracking test.'
+          },
+          {
+            id: 'tracking-review', title: 'Have Codex check the evidence folder', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Attach any screenshot that is not already in the folder, then paste this message.'],
+            copyLabel: 'Copy Codex message',
+            copyText: `Review the newest folder under /home/eva/trelew-workspace/TrelewSocialMediaAds/out/launch-evidence. Check whether it proves production environment setup, four working landing-page forms, UTM capture, one GA4 lead, one Google Ads lead and one Meta Lead without duplication. Do not change code. Return READY TO BUILD CAMPAIGNS or BLOCKED, followed by the exact missing proof.`,
+            doneWhen: 'Codex returns READY TO BUILD CAMPAIGNS.'
+          }
+        ]
+      },
+      {
+        id: 'build', title: '6. Build campaigns and keep them paused',
+        steps: [
+          {
+            id: 'google-build', title: 'Build the Shopify Spain Google campaign', action: 'DO THIS IN GOOGLE ADS', actionStyle: 'platform',
+            instructions: [
+              'Create one Search campaign for Spain and Spanish only.',
+              'Use presence-based location targeting, not people merely interested in Spain.',
+              'Paste the groups, ads, sitelinks, callouts and final URL from out/ads/google/shopify-es/assets.md.',
+              'Add negatives: jobs, job, salary, course, tutorial, free, template, theme, DIY and training.',
+              'Set €13 daily and keep the campaign paused.'
+            ],
+            resource: { label: 'Open Google Ads', url: 'https://ads.google.com/' },
+            doneWhen: 'The paused campaign targets Spain presence and Spanish, has the negatives, correct landing URL and €13 daily budget.'
+          },
+          {
+            id: 'linkedin-build', title: 'Build the UK LinkedIn campaign and form', action: 'DO THIS IN LINKEDIN', actionStyle: 'platform',
+            instructions: [
+              'Create a Lead Generation campaign for the United Kingdom.',
+              'Target CFO, COO, Head of Operations, Client Services, RevOps, Data or BI at 20 to 500 employee professional-services firms.',
+              'Use the approved image or video and copy from out/ads/linkedin-uk/reporting-portals-a.',
+              'Ask work email, company, role, reporting method, data source, approximate client users and desired timing.',
+              'Set €25 daily and keep the campaign paused.'
+            ],
+            resource: { label: 'Open LinkedIn Campaign Manager', url: 'https://www.linkedin.com/campaignmanager/' },
+            doneWhen: 'A test form reaches the lead owner and the paused campaign has the correct UK audience, creative and €25 daily budget.'
+          },
+          {
+            id: 'meta-draft-only', title: 'Upload the Meta ad but leave it off', action: 'DO THIS IN META', actionStyle: 'platform',
+            instructions: [
+              'Create a Sales or Leads campaign draft for Shopify Spain.',
+              'Upload out/ads/shopify-es/problem-mirror-a/ad.mp4 and copy the approved ad fields from ad.json.',
+              'Use the Instagram and Facebook UTM links from cta_urls.',
+              'Keep the campaign and ad set off. Meta cold is not part of the first launch.'
+            ],
+            resource: { label: 'Open Meta Ads Manager', url: 'https://business.facebook.com/adsmanager/' },
+            doneWhen: 'The Meta campaign is a complete paused draft and has spent €0.'
+          },
+          {
+            id: 'final-preview', title: 'Send campaign screenshots for a final preflight', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Attach screenshots showing campaign, audience, budget, conversion, ad copy and final URL for Google and LinkedIn. Then paste this message.'],
+            copyLabel: 'Copy preflight message',
+            copyText: `Audit the attached Google Ads Shopify Spain and LinkedIn UK reporting-portals campaign screenshots. Check campaign status, objective, country, language, presence targeting, audience, exclusions, conversion action, daily budget, landing page, UTM parameters, spelling and creative crop. Compare them with the launch checklist in dashboard.html. Do not operate either platform. Return READY TO LAUNCH or BLOCKED with one exact fix per problem.`,
+            doneWhen: 'Codex returns READY TO LAUNCH and another human has clicked both preview links.'
+          }
+        ]
+      },
+      {
+        id: 'operate', title: '7. Launch and follow the fixed routine',
+        steps: [
+          {
+            id: 'launch-record', title: 'Launch only Google Shopify Spain and LinkedIn UK', action: 'DO THIS IN THE AD PLATFORMS', actionStyle: 'platform',
+            instructions: [
+              'Enable the approved Google campaign and approved LinkedIn campaign.',
+              'Leave every other paid campaign off.',
+              'Immediately set the matching Results rows to Live and record start time, daily budget and total cap.'
+            ],
+            doneWhen: 'Exactly two campaigns are spending and the Results tab matches both platforms.'
+          },
+          {
+            id: 'day-one', title: 'Check for breakage after 24 hours', action: 'CHECK THIS', actionStyle: 'check',
+            instructions: [
+              'Confirm both campaigns are approved and have not exceeded the daily budget.',
+              'Open each live ad link and submit no forms unless another test is necessary.',
+              'Check country, language and analytics traffic.',
+              'Fix only rejection, wrong URL, wrong location, broken tracking or uncontrolled spend.'
+            ],
+            doneWhen: 'Both campaigns deliver to the right country and page, tracking receives visits, and spend is controlled.'
+          },
+          {
+            id: 'no-daily-edits', title: 'Leave working campaigns unchanged for seven days', action: 'WAIT', actionStyle: 'wait',
+            instructions: [
+              'Do not change bids, audiences, copy or budgets because of one quiet day.',
+              'Write down observations without editing the campaigns.',
+              'Break the wait only for the five problems listed in the previous step.'
+            ],
+            doneWhen: 'Seven days pass without an unexplained campaign edit.'
+          },
+          {
+            id: 'weekly-update', title: 'Update the dashboard every Monday', action: 'RECORD THIS', actionStyle: 'record',
+            instructions: [
+              'Copy spend, impressions, clicks and qualified inquiries from both platforms into the Results tab.',
+              'For Google, review the real search terms and add irrelevant terms as negatives.',
+              'For every inquiry, record qualified or rejected, call booked, proposal sent and client won.',
+              'Write one sentence about lead quality and any campaign change.'
+            ],
+            doneWhen: 'Every live row has current numbers and every inquiry has a current stage.'
+          },
+          {
+            id: 'decision-rule', title: 'Apply the stop rules without improvising', action: 'CHECK THESE NUMBERS', actionStyle: 'check',
+            instructions: [
+              'Keep a campaign when it produces qualified inquiries at or below target CPL.',
+              'Pause Google Shopify Spain at €390 total spend with no qualified inquiry.',
+              'Pause LinkedIn UK at €750 total spend with no qualified inquiry.',
+              'Rewrite a social hook below 0.5% CTR after 2,000 impressions.',
+              'Do not judge an ad by likes, comments or cheap unqualified forms.'
+            ],
+            doneWhen: 'Every keep, change or pause decision cites spend, qualified inquiries and target CPL.'
+          },
+          {
+            id: 'learning-log', title: 'Turn the first result into the next brief', action: 'SEND THIS TO CODEX', actionStyle: 'codex',
+            instructions: ['Export the Results tab CSV, attach it to Codex and paste this message.'],
+            copyLabel: 'Copy analysis message',
+            copyText: `Review the attached Trelew Ads Results CSV and the matching campaign notes. For each live campaign calculate CTR, qualified CPL and progress toward the test cap. Separate tracking problems from audience, offer, creative and landing-page problems. Recommend Keep, Change one variable or Pause using the rules in dashboard.html. Then write the exact next post.sh, ad.sh or Codex command for the single highest-priority next test. Do not change campaigns or spend money.`,
+            doneWhen: 'The next test has one written hypothesis and one exact command or Codex message.'
+          }
+        ]
+      }
+    ];
+
+    const offerPlans = {
+      shopifyEs: {
+        audience: 'Spain; Spanish-speaking founders and ecommerce operators aged 25–54. Exclude existing leads, clients and warm visitors from cold ads.',
+        runPlan: '26–30 days; keep a concept until about 2,000 impressions unless tracking is broken.',
+        budgetPlan: 'The three Shopify ES concepts share a €390 campaign cap; start near €13–€15/day.',
+        validation: 'Qualified CPL ≤ €195. Rewrite a hook below 0.5% CTR after 2,000 impressions. Pause at €390 with no qualified inquiry.'
+      },
+      dashboardsEs: {
+        audience: 'Spain; consultancy owners, COO, Head of Operations, Finance, RevOps, Data and BI roles at roughly 20–500 employee firms.',
+        runPlan: '30–45 days; use a native LinkedIn Lead Gen Form until website conversion tracking is added.',
+        budgetPlan: 'The three dashboard concepts share a €750 cap; start near €25/day.',
+        validation: 'Prefer 2+ qualified inquiries and CPL ≤ €375. Pause at €750 with none; improve form questions if lead quality is poor.'
+      },
+      migrationIe: {
+        audience: 'Ireland; ecommerce founders and managers currently on WooCommerce, Magento or another platform and planning a real migration.',
+        runPlan: '30–45 days with weekly reviews; separate cold proof from warm scope/price ads.',
+        budgetPlan: 'The three migration concepts share a €600 cap; start near €20/day.',
+        validation: 'Qualified CPL ≤ €300. Leads must name a real store/platform. Pause at €600 with no qualified inquiry.'
+      },
+      portalsUk: {
+        audience: 'United Kingdom; CFO, COO, Head of Operations, Client Services, RevOps, Data or BI at 20–500 employee consultancies, agencies and professional-services firms.',
+        runPlan: '30–45 days; start with LinkedIn native Lead Gen Forms and review lead quality weekly.',
+        budgetPlan: 'The three reporting concepts share a €750 cap; start near €25/day.',
+        validation: 'Prefer 2+ qualified inquiries and CPL ≤ €375. Pause at €750 with none; add qualification if forms are low quality.'
+      }
+    };
+
+    const launchTrackingAds = [
+      {
+        id: 'launch-google-shopify-es',
+        name: 'FIRST LAUNCH · Google Search · Shopify Spain',
+        offer: 'Shopify store', market: 'Spain', channel: 'Google Search', angle: 'High-intent search',
+        concept: 'Three Spanish intent groups for buyers actively seeking a Shopify agency, developer or scoped store build.',
+        url: landingPages.shopifyEs, targetCpl: 195,
+        audience: 'People physically in Spain searching in Spanish for a Shopify agency, developer, store price or ecommerce build. Exclude jobs, courses, free, templates and DIY.',
+        runPlan: '30 days or until €390 total spend, whichever happens first. Make no routine changes during the first seven days.',
+        budgetPlan: '€13/day with a hard €390 first-test cap.',
+        validation: 'Working with at least one qualified inquiry at €195 or less. Pause at €390 with none.',
+        status: 'Draft', spend: 0, impressions: 0, clicks: 0, qualifiedLeads: 0, sales: 0,
+        notes: 'FIRST LAUNCH. Owner, inbox and backup person: add before launch.'
+      },
+      {
+        id: 'launch-linkedin-portals-uk',
+        name: 'FIRST LAUNCH · LinkedIn · Reporting portals UK',
+        offer: 'Client reporting portal', market: 'United Kingdom', channel: 'LinkedIn Lead Gen', angle: 'Repeated reporting problem',
+        concept: 'One proof-led image or video plus a native form for professional-services teams rebuilding client reports.',
+        url: landingPages.portalsUk, targetCpl: 375,
+        audience: 'UK CFO, COO, Head of Operations, Client Services, RevOps, Data or BI at 20–500 employee professional-services firms.',
+        runPlan: '30 days or until €750 total spend, whichever happens first. Make no routine changes during the first seven days.',
+        budgetPlan: '€25/day with a hard €750 first-test cap.',
+        validation: 'Prefer two or more qualified inquiries at €375 or less. Pause at €750 with none.',
+        status: 'Draft', spend: 0, impressions: 0, clicks: 0, qualifiedLeads: 0, sales: 0,
+        notes: 'FIRST LAUNCH. Owner, inbox and backup person: add before launch.'
+      }
+    ];
+
+    const starterAds = launchTrackingAds.concat([
+      ['Shopify ES · Problem mirror', 'Shopify store', 'Spain', 'Meta Reels · Cold', 'Problem mirror', 'A merchant recognises the pain of a half-configured store before seeing the finished storefront.', landingPages.shopifyEs, 195, 'shopifyEs'],
+      ['Shopify ES · Working proof', 'Shopify store', 'Spain', 'Meta Reels · Cold', 'Working proof', 'A 15–25 second storefront walkthrough: catalogue, cart, payment and mobile purchase path.', landingPages.shopifyEs, 195, 'shopifyEs'],
+      ['Shopify ES · Scope certainty', 'Shopify store', 'Spain', 'Meta Feed · Retargeting', 'Scope certainty', '€6,500, planned 3 weeks, up to 60 products, testing and handover.', landingPages.shopifyEs, 195, 'shopifyEs'],
+      ['Dashboards ES · Problem mirror', 'Reporting dashboard', 'Spain', 'LinkedIn Lead Gen · Cold', 'Problem mirror', 'No vuelvas a preparar el mismo informe: show the recurring reporting work the buyer wants to stop.', landingPages.dashboardsEs, 375, 'dashboardsEs'],
+      ['Dashboards ES · Working proof', 'Reporting dashboard', 'Spain', 'LinkedIn Video + Lead Gen', 'Working proof', 'Show filtering, role-based access and CSV export from the live dashboard.', landingPages.dashboardsEs, 375, 'dashboardsEs'],
+      ['Dashboards ES · Scope certainty', 'Reporting dashboard', 'Spain', 'Meta Feed · Retargeting', 'Scope certainty', '€12,500, planned 3 weeks, one source, three profile types and documented handover.', landingPages.dashboardsEs, 375, 'dashboardsEs'],
+      ['Migration IE · Problem mirror', 'Shopify migration', 'Ireland', 'Meta Reels · Cold', 'Problem mirror', 'Moving platforms should not mean losing track of the catalogue, URLs and operating rules.', landingPages.migrationIe, 300, 'migrationIe'],
+      ['Migration IE · Working proof', 'Shopify migration', 'Ireland', 'Meta Reels · Cold', 'Working proof', 'Show the mapped catalogue, redirects and tested purchase path instead of an abstract migration claim.', landingPages.migrationIe, 300, 'migrationIe'],
+      ['Migration IE · Scope certainty', 'Shopify migration', 'Ireland', 'Meta Feed · Retargeting', 'Scope certainty', '€10,000, planned 5 weeks, up to 100 supplied redirects and ownership handover.', landingPages.migrationIe, 300, 'migrationIe'],
+      ['Reporting UK · Problem mirror', 'Client reporting portal', 'United Kingdom', 'LinkedIn Lead Gen · Cold', 'Problem mirror', 'Stop rebuilding every client report: lead with the repeated work and inconsistent delivery.', landingPages.portalsUk, 375, 'portalsUk'],
+      ['Reporting UK · Working proof', 'Client reporting portal', 'United Kingdom', 'LinkedIn Video + Lead Gen', 'Working proof', 'Show Admin, Staff and Client views, agreed metrics and a clean export.', landingPages.portalsUk, 375, 'portalsUk'],
+      ['Reporting UK · Scope certainty', 'Client reporting portal', 'United Kingdom', 'LinkedIn Lead Gen · Retargeting', 'Scope certainty', 'One defined data source, controlled access, source code, testing and handover.', landingPages.portalsUk, 375, 'portalsUk']
+    ].map((ad, index) => {
+      const plan = offerPlans[ad[8]];
+      return {
+        id: `starter-${index + 1}`,
+        name: ad[0], offer: ad[1], market: ad[2], channel: ad[3], angle: ad[4], concept: ad[5],
+        url: ad[6], targetCpl: ad[7], audience: plan.audience, runPlan: plan.runPlan,
+        budgetPlan: plan.budgetPlan, validation: plan.validation,
+        status: 'Draft', spend: 0, impressions: 0, clicks: 0, qualifiedLeads: 0, sales: 0, notes: ''
+      };
+    }));
+
+    const els = {
+      resultsTab: document.querySelector('#results-tab'),
+      checklistTab: document.querySelector('#checklist-tab'),
+      resultsPanel: document.querySelector('#results-panel'),
+      checklistPanel: document.querySelector('#checklist-panel'),
+      body: document.querySelector('#ads-body'),
+      empty: document.querySelector('#empty-state'),
+      rowCount: document.querySelector('#row-count'),
+      live: document.querySelector('#live-total'),
+      spend: document.querySelector('#spend-total'),
+      leads: document.querySelector('#lead-total'),
+      cpl: document.querySelector('#cpl-total'),
+      saveState: document.querySelector('#save-state'),
+      search: document.querySelector('#search-filter'),
+      status: document.querySelector('#status-filter'),
+      market: document.querySelector('#market-filter'),
+      dialog: document.querySelector('#ad-dialog'),
+      form: document.querySelector('#ad-form'),
+      dialogTitle: document.querySelector('#dialog-title'),
+      deleteButton: document.querySelector('#delete-button'),
+      campaignPlan: document.querySelector('#campaign-plan'),
+      codeReadiness: document.querySelector('#code-readiness'),
+      checklistPhases: document.querySelector('#checklist-phases'),
+      checklistProgress: document.querySelector('#checklist-progress'),
+      checklistProgressText: document.querySelector('#checklist-progress-text'),
+      nextChecklistStep: document.querySelector('#next-checklist-step'),
+      checklistCount: document.querySelector('#checklist-count'),
+      copyStatus: document.querySelector('#copy-status')
+    };
+
+    let ads = loadAds();
+    let checklistState = loadChecklist();
+
+    function loadAds() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!Array.isArray(saved)) return structuredClone(starterAds);
+        const defaults = new Map(starterAds.map(ad => [ad.id, ad]));
+        const loaded = saved.map(ad => ({ ...(defaults.get(ad.id) || {}), ...ad }));
+        const savedIds = new Set(saved.map(ad => ad.id));
+        const missingLaunchRows = launchTrackingAds.filter(ad => !savedIds.has(ad.id));
+        return [...structuredClone(missingLaunchRows), ...loaded];
+      } catch (error) {
+        return structuredClone(starterAds);
+      }
+    }
+
+    function loadChecklist() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CHECKLIST_KEY));
+        return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveAds() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ads));
+      els.saveState.textContent = 'Saved in this browser';
+    }
+
+    function numberValue(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat('en-IE', {
+        style: 'currency',
+        currency: 'EUR',
+        maximumFractionDigits: value >= 100 ? 0 : 2
+      }).format(value || 0);
+    }
+
+    function integer(value) {
+      return new Intl.NumberFormat('en-IE', { maximumFractionDigits: 0 }).format(value || 0);
+    }
+
+    function metric(value, suffix = '') {
+      return Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : '—';
+    }
+
+    function signalFor(ad) {
+      if (ad.status === 'Draft' || ad.status === 'Ready') return { label: 'Not launched', className: 'waiting' };
+      if (!ad.impressions && !ad.spend) return { label: 'Awaiting data', className: 'waiting' };
+
+      const ctr = ad.impressions ? (ad.clicks / ad.impressions) * 100 : 0;
+      const cpl = ad.qualifiedLeads ? ad.spend / ad.qualifiedLeads : Infinity;
+      const target = numberValue(ad.targetCpl);
+
+      if (!ad.qualifiedLeads && target && ad.spend >= target * 2) return { label: 'Replace', className: 'replace' };
+      if (ad.impressions >= 2000 && ctr < 0.5) return { label: 'Rewrite hook', className: 'rewrite' };
+      if (!ad.qualifiedLeads && target && ad.spend >= target) return { label: 'Review', className: 'review' };
+      if (!ad.qualifiedLeads) return { label: 'Learning', className: 'learning' };
+      if (!target || cpl <= target) return { label: 'On track', className: 'track' };
+      return { label: 'Review', className: 'review' };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function filteredAds() {
+      const query = els.search.value.trim().toLowerCase();
+      return ads.filter(ad => {
+        const matchesText = !query || [ad.name, ad.offer, ad.market, ad.channel, ad.angle, ad.concept]
+          .some(value => String(value || '').toLowerCase().includes(query));
+        const matchesStatus = els.status.value === 'all' || ad.status === els.status.value;
+        const matchesMarket = els.market.value === 'all' || ad.market === els.market.value;
+        return matchesText && matchesStatus && matchesMarket;
+      });
+    }
+
+    function renderMarkets() {
+      const current = els.market.value;
+      const markets = [...new Set(ads.map(ad => ad.market).filter(Boolean))].sort();
+      els.market.innerHTML = '<option value="all">All markets</option>' + markets
+        .map(market => `<option>${escapeHtml(market)}</option>`).join('');
+      els.market.value = markets.includes(current) ? current : 'all';
+    }
+
+    function renderSummary() {
+      const live = ads.filter(ad => ad.status === 'Live').length;
+      const spend = ads.reduce((sum, ad) => sum + numberValue(ad.spend), 0);
+      const leads = ads.reduce((sum, ad) => sum + numberValue(ad.qualifiedLeads), 0);
+      els.live.textContent = integer(live);
+      els.spend.textContent = money(spend);
+      els.leads.textContent = integer(leads);
+      els.cpl.textContent = leads ? money(spend / leads) : '—';
+    }
+
+    function renderTable() {
+      const visibleAds = filteredAds();
+      els.body.innerHTML = visibleAds.map(ad => {
+        const ctr = ad.impressions ? (ad.clicks / ad.impressions) * 100 : NaN;
+        const cpl = ad.qualifiedLeads ? ad.spend / ad.qualifiedLeads : NaN;
+        const signal = signalFor(ad);
+        const statusClass = String(ad.status || 'Draft').toLowerCase();
+        return `
+          <tr>
+            <td class="ad-cell" data-label="Ad">
+              <span class="ad-name">${escapeHtml(ad.name)}</span>
+              <span class="ad-meta">${escapeHtml(ad.market)} · ${escapeHtml(ad.angle || ad.concept)}</span>
+            </td>
+            <td class="status-cell" data-label="Status"><span class="badge ${statusClass}">${escapeHtml(ad.status)}</span></td>
+            <td class="channel-cell" data-label="Channel">${escapeHtml(ad.channel)}</td>
+            <td class="numeric-cell number" data-label="Spend">${money(ad.spend)}</td>
+            <td class="numeric-cell number" data-label="Clicks">${integer(ad.clicks)}</td>
+            <td class="numeric-cell number" data-label="Qualified">${integer(ad.qualifiedLeads)}</td>
+            <td class="numeric-cell number" data-label="CTR">${metric(ctr, '%')}</td>
+            <td class="numeric-cell number" data-label="CPL">${Number.isFinite(cpl) ? money(cpl) : '—'}</td>
+            <td class="decision-cell" data-label="Signal"><span class="badge ${signal.className}">${signal.label}</span></td>
+            <td class="action-cell" data-label="Actions">
+              <div class="row-actions">
+                ${ad.url ? `<a class="icon-button" href="${escapeHtml(ad.url)}" target="_blank" rel="noreferrer" aria-label="Open landing page for ${escapeHtml(ad.name)}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 5h5v5m0-5-8 8M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
+                <button class="icon-button edit-button" type="button" data-id="${escapeHtml(ad.id)}" aria-label="Edit ${escapeHtml(ad.name)}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m14 6 4 4M4 20l3.5-.7L19 7.8a1.4 1.4 0 0 0 0-2l-.8-.8a1.4 1.4 0 0 0-2 0L4.7 16.5 4 20Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      els.empty.hidden = visibleAds.length > 0;
+      els.body.closest('table').hidden = visibleAds.length === 0;
+      els.rowCount.textContent = `${visibleAds.length} ${visibleAds.length === 1 ? 'ad' : 'ads'}`;
+      document.querySelectorAll('.edit-button').forEach(button => {
+        button.addEventListener('click', () => openEditor(button.dataset.id));
+      });
+    }
+
+    function renderCampaignPlan() {
+      els.campaignPlan.innerHTML = campaignPlan.map(campaign => {
+        const destination = campaign.destination.startsWith('http')
+          ? `<a href="${escapeHtml(campaign.destination)}" target="_blank" rel="noreferrer">${escapeHtml(campaign.destination.replace('https://trelew.studio', 'trelew.studio'))}</a>`
+          : escapeHtml(campaign.destination);
+        return `
+          <article class="campaign-card">
+            <div class="campaign-topline">
+              <h3>${escapeHtml(campaign.name)}</h3>
+              <span class="badge ${campaign.statusClass}">${escapeHtml(campaign.status)}</span>
+            </div>
+            <dl>
+              <dt>Platform</dt><dd>${escapeHtml(campaign.platform)}</dd>
+              <dt>Target</dt><dd>${escapeHtml(campaign.target)}</dd>
+              <dt>Destination</dt><dd>${destination}</dd>
+              <dt>Ad</dt><dd>${escapeHtml(campaign.creative)}</dd>
+              <dt>Run time</dt><dd>${escapeHtml(campaign.run)}</dd>
+              <dt>Budget</dt><dd>${escapeHtml(campaign.budget)}</dd>
+              <dt>Working if</dt><dd>${escapeHtml(campaign.working)}</dd>
+              <dt>Pause/fix if</dt><dd>${escapeHtml(campaign.stop)}</dd>
+            </dl>
+          </article>`;
+      }).join('');
+    }
+
+    function renderCodeReadiness() {
+      els.codeReadiness.innerHTML = codeReadiness.map(item => `
+        <article class="readiness-card ${item.state}">
+          <h3><span class="status-dot" aria-hidden="true"></span>${escapeHtml(item.label)}</h3>
+          <p>${item.text}</p>
+        </article>`).join('');
+    }
+
+    function allChecklistSteps() {
+      return checklistPhases.flatMap(phase => phase.steps.map((step, index) => ({
+        ...step,
+        phaseId: phase.id,
+        phaseTitle: phase.title,
+        position: index + 1
+      })));
+    }
+
+    async function copyChecklistText(value) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.append(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      if (!copied) throw new Error('Copy was not available in this browser.');
+    }
+
+    function saveChecklist() {
+      localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklistState));
+    }
+
+    function renderChecklist() {
+      const steps = allChecklistSteps();
+      const complete = steps.filter(step => checklistState[step.id] === true).length;
+      const percent = steps.length ? Math.round((complete / steps.length) * 100) : 0;
+      const next = steps.find(step => checklistState[step.id] !== true);
+      els.checklistProgress.value = percent;
+      els.checklistProgress.textContent = `${percent}%`;
+      els.checklistProgressText.textContent = `${complete} of ${steps.length} done`;
+      els.nextChecklistStep.textContent = next ? `${next.action}: ${next.title}` : 'Everything is complete. Review results weekly.';
+      els.checklistCount.textContent = `${steps.length} steps · ${percent}% complete`;
+
+      let absolute = 0;
+      els.checklistPhases.innerHTML = checklistPhases.map(phase => {
+        const phaseComplete = phase.steps.filter(step => checklistState[step.id] === true).length;
+        const items = phase.steps.map(step => {
+          absolute += 1;
+          const done = checklistState[step.id] === true;
+          const descriptionId = `step-description-${step.id}`;
+          const checkboxId = `check-${step.id}`;
+          const instructions = step.instructions
+            .map(instruction => `<li>${escapeHtml(instruction)}</li>`)
+            .join('');
+          const payload = step.copyText
+            ? `<pre class="copy-payload"><code>${escapeHtml(step.copyText)}</code></pre>`
+            : '';
+          const actions = [
+            step.copyText
+              ? `<button class="button copy-button" type="button" data-copy-checklist-id="${escapeHtml(step.id)}">${escapeHtml(step.copyLabel || 'Copy')}</button>`
+              : '',
+            step.resource
+              ? `<a class="resource-link" href="${escapeHtml(step.resource.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(step.resource.label)} ↗</a>`
+              : ''
+          ].filter(Boolean).join('');
+          return `
+            <article class="check-item ${done ? 'is-done' : ''}">
+              <label class="check-toggle" for="${checkboxId}">
+                <input id="${checkboxId}" type="checkbox" data-checklist-id="${escapeHtml(step.id)}" ${done ? 'checked' : ''} aria-describedby="${descriptionId}">
+                <span class="sr-only">Mark ${escapeHtml(step.title)} done</span>
+              </label>
+              <div class="check-item-copy" id="${descriptionId}">
+                <div class="step-action-row"><span class="action-badge ${escapeHtml(step.actionStyle || 'record')}">${escapeHtml(step.action)}</span></div>
+                <div class="check-item-title"><span>${escapeHtml(step.title)}</span><span class="step-number">${String(absolute).padStart(2, '0')}</span></div>
+                <ol>${instructions}</ol>
+                ${payload}
+                ${actions ? `<div class="step-actions">${actions}</div>` : ''}
+                <p class="done-when"><strong>Done when:</strong> ${escapeHtml(step.doneWhen)}</p>
+              </div>
+            </article>`;
+        }).join('');
+        return `
+          <section class="phase" aria-labelledby="phase-${escapeHtml(phase.id)}">
+            <header class="phase-header">
+              <h3 id="phase-${escapeHtml(phase.id)}">${escapeHtml(phase.title)}</h3>
+              <span>${phaseComplete} of ${phase.steps.length} done</span>
+            </header>
+            <div class="check-list">${items}</div>
+          </section>`;
+      }).join('');
+
+      document.querySelectorAll('[data-checklist-id]').forEach(input => {
+        input.addEventListener('change', () => {
+          checklistState[input.dataset.checklistId] = input.checked;
+          saveChecklist();
+          renderChecklist();
+        });
+      });
+
+      document.querySelectorAll('[data-copy-checklist-id]').forEach(button => {
+        button.addEventListener('click', async () => {
+          const step = steps.find(item => item.id === button.dataset.copyChecklistId);
+          if (!step?.copyText) return;
+
+          const originalLabel = button.textContent;
+          try {
+            await copyChecklistText(step.copyText);
+            button.textContent = 'Copied';
+            els.copyStatus.textContent = `Copied the ${step.action.toLowerCase()} content for ${step.title}.`;
+            window.setTimeout(() => { button.textContent = originalLabel; }, 1800);
+          } catch (error) {
+            button.textContent = 'Copy failed';
+            els.copyStatus.textContent = 'Copy failed. Select the text above and copy it manually.';
+            window.setTimeout(() => { button.textContent = originalLabel; }, 2400);
+          }
+        });
+      });
+    }
+
+    function setActiveTab(tabName, updateHash = true) {
+      const checklistActive = tabName === 'checklist';
+      els.resultsTab.setAttribute('aria-selected', String(!checklistActive));
+      els.checklistTab.setAttribute('aria-selected', String(checklistActive));
+      els.resultsTab.tabIndex = checklistActive ? -1 : 0;
+      els.checklistTab.tabIndex = checklistActive ? 0 : -1;
+      els.resultsPanel.hidden = checklistActive;
+      els.checklistPanel.hidden = !checklistActive;
+      if (updateHash) history.replaceState(null, '', checklistActive ? '#checklist' : '#results');
+    }
+
+    function render() {
+      renderMarkets();
+      renderSummary();
+      renderTable();
+      renderCampaignPlan();
+      renderCodeReadiness();
+      renderChecklist();
+    }
+
+    function openEditor(id = '') {
+      const ad = ads.find(item => item.id === id) || {
+        id: `ad-${Date.now()}`,
+        name: '', offer: '', market: '', channel: '', angle: 'Custom', concept: '', url: '',
+        audience: '', runPlan: '', budgetPlan: '', validation: '',
+        targetCpl: 0, status: 'Draft', spend: 0, impressions: 0, clicks: 0,
+        qualifiedLeads: 0, sales: 0, notes: ''
+      };
+      els.form.reset();
+      els.dialogTitle.textContent = id ? 'Edit ad' : 'Add ad';
+      els.deleteButton.hidden = !id;
+      for (const [key, value] of Object.entries(ad)) {
+        const field = els.form.elements.namedItem(key);
+        if (field) field.value = value ?? '';
+      }
+      els.dialog.showModal();
+      document.querySelector('#ad-name').focus();
+    }
+
+    function closeEditor() {
+      els.dialog.close();
+    }
+
+    function exportCsv() {
+      const columns = [
+        ['name', 'Ad name'], ['offer', 'Offer'], ['market', 'Market'], ['channel', 'Channel'],
+        ['angle', 'Angle'], ['concept', 'Concept'], ['status', 'Status'], ['url', 'Landing page'],
+        ['audience', 'Target audience'], ['runPlan', 'Run plan'], ['budgetPlan', 'Budget plan'],
+        ['validation', 'Validation rule'],
+        ['spend', 'Spend EUR'], ['targetCpl', 'Target CPL EUR'], ['impressions', 'Impressions'],
+        ['clicks', 'Clicks'], ['qualifiedLeads', 'Qualified inquiries'], ['sales', 'Sales'], ['notes', 'Notes']
+      ];
+      const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+      const csv = [columns.map(column => quote(column[1])).join(',')]
+        .concat(ads.map(ad => columns.map(column => quote(ad[column[0]])).join(',')))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `trelew-ads-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    }
+
+    els.form.addEventListener('submit', event => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(els.form));
+      ['spend', 'targetCpl', 'impressions', 'clicks', 'qualifiedLeads', 'sales'].forEach(key => {
+        values[key] = numberValue(values[key]);
+      });
+      const existing = ads.findIndex(ad => ad.id === values.id);
+      const original = existing >= 0 ? ads[existing] : {};
+      const next = { ...original, ...values, angle: original.angle || 'Custom' };
+      if (existing >= 0) ads[existing] = next;
+      else ads.unshift(next);
+      saveAds();
+      closeEditor();
+      render();
+    });
+
+    els.deleteButton.addEventListener('click', () => {
+      const id = els.form.elements.namedItem('id').value;
+      const ad = ads.find(item => item.id === id);
+      if (!ad || !window.confirm(`Delete “${ad.name}”? This cannot be undone.`)) return;
+      ads = ads.filter(item => item.id !== id);
+      saveAds();
+      closeEditor();
+      render();
+    });
+
+    document.querySelector('#add-button').addEventListener('click', () => openEditor());
+    document.querySelector('#export-button').addEventListener('click', exportCsv);
+    document.querySelector('#close-dialog').addEventListener('click', closeEditor);
+    document.querySelector('#cancel-button').addEventListener('click', closeEditor);
+    els.dialog.addEventListener('click', event => {
+      if (event.target === els.dialog) closeEditor();
+    });
+
+    document.querySelector('#reset-button').addEventListener('click', () => {
+      if (!window.confirm('Restore the 12 starter suggestions? Your current dashboard data will be replaced.')) return;
+      ads = structuredClone(starterAds);
+      saveAds();
+      render();
+    });
+
+    document.querySelector('#reset-checklist-button').addEventListener('click', () => {
+      if (!window.confirm('Reset every launch-checklist step to not done?')) return;
+      checklistState = {};
+      saveChecklist();
+      renderChecklist();
+    });
+
+    els.resultsTab.addEventListener('click', () => setActiveTab('results'));
+    els.checklistTab.addEventListener('click', () => setActiveTab('checklist'));
+    document.querySelector('.view-tabs').addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      const nextTab = els.resultsTab.getAttribute('aria-selected') === 'true' ? els.checklistTab : els.resultsTab;
+      nextTab.click();
+      nextTab.focus();
+    });
+
+    [els.search, els.status, els.market].forEach(control => {
+      control.addEventListener(control === els.search ? 'input' : 'change', renderTable);
+    });
+
+    render();
+    setActiveTab(window.location.hash === '#checklist' ? 'checklist' : 'results', false);
+  </script>
+</body>
+</html>

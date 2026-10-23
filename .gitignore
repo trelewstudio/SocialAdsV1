@@ -1,0 +1,8 @@
+out/
+prompt.txt
+ad-prompt.txt
+.firecrawl/
+__pycache__/
+.video-venv/
+.env.heygen
+.env.heygen.*

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trelew Social Media Ads</title>
+  <style>
+    :root { color: #122f34; background: #fbf6e8; font-family: "Courier Prime", monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0 auto; max-width: 76rem; padding: 2rem; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    h1 { color: #338591; font-size: clamp(2rem, 4vw, 2.5rem); margin: 0; }
+    article h2 { font-size: 1.25rem; }
+    nav { display: flex; gap: .75rem; }
+    nav a { color: #122f34; min-height: 44px; display: inline-flex; align-items: center; }
+    button { font: inherit; }
+    button, a { touch-action: manipulation; }
+    :focus-visible { outline: 3px solid #338591; outline-offset: 3px; }
+    .filter-panel { border-block: 1px solid #122f34; margin: 1.5rem 0; padding: 1rem 0; }
+    .filter-heading { align-items: baseline; display: flex; flex-wrap: wrap; gap: .5rem 1rem; justify-content: space-between; }
+    .filter-heading h2 { font-size: 1rem; margin: 0; text-transform: uppercase; }
+    #result-count { margin: 0; }
+    #run-filters { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .9rem; }
+    .filter-button { background: transparent; border: 1px solid #122f34; border-radius: 999px; color: #122f34; cursor: pointer; min-height: 44px; padding: .55rem 1rem; }
+    .filter-button:hover { background: rgba(51, 133, 145, .12); }
+    .filter-button[aria-pressed="true"] { background: #122f34; color: #fbf6e8; }
+    .filter-count { opacity: .7; }
+    #gallery { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); }
+    article { border: 2px solid #122f34; padding: 1rem; background: white; }
+    img { display: block; height: auto; max-width: 100%; }
+    .run-reference { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; justify-content: space-between; margin-bottom: .75rem; }
+    .run-badge { background: #d4ae8c; border-radius: 999px; font-size: .82rem; font-weight: 700; padding: .35rem .65rem; }
+    .download-link { align-items: center; color: #122f34; display: inline-flex; min-height: 44px; padding: .4rem .2rem; text-underline-offset: .2rem; }
+    .download-link:hover { background: rgba(51, 133, 145, .12); color: #122f34; }
+    .reference-code { display: block; font-size: .82rem; margin-bottom: 1rem; overflow-wrap: anywhere; }
+    .image-button { background: #122f34; border: 0; cursor: zoom-in; display: block; padding: 0; position: relative; width: 100%; }
+    .image-button img { transition: opacity 140ms ease; width: 100%; }
+    .image-button:hover img { opacity: .88; }
+    .zoom-hint { background: #122f34; bottom: .75rem; color: #fbf6e8; font-size: .78rem; padding: .4rem .55rem; pointer-events: none; position: absolute; right: .75rem; }
+    .empty-state { border: 2px dashed #338591; grid-column: 1 / -1; padding: 2rem; text-align: center; }
+    .error { color: #8b2f22; }
+    #image-dialog { background: #fbf6e8; border: 0; color: #122f34; max-height: 94dvh; max-width: 96rem; padding: 0; width: min(96vw, 96rem); }
+    #image-dialog::backdrop { background: rgba(18, 47, 52, .9); }
+    .lightbox-shell { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: 94dvh; }
+    .lightbox-header, .lightbox-footer { align-items: center; display: flex; gap: 1rem; justify-content: space-between; padding: .75rem 1rem; }
+    .lightbox-header { border-bottom: 1px solid #122f34; }
+    .lightbox-header h2 { font-size: 1rem; margin: 0; overflow-wrap: anywhere; }
+    .lightbox-close { align-items: center; background: transparent; border: 1px solid #122f34; border-radius: 50%; color: #122f34; cursor: pointer; display: inline-flex; flex: 0 0 44px; height: 44px; justify-content: center; padding: 0; width: 44px; }
+    .lightbox-close:hover { background: rgba(51, 133, 145, .12); }
+    .lightbox-close svg { height: 20px; width: 20px; }
+    .lightbox-stage { background: #122f34; display: grid; min-height: 0; overflow: auto; padding: 1rem; place-items: center; }
+    .lightbox-stage img { height: auto; max-height: calc(94dvh - 9rem); max-width: 100%; object-fit: contain; width: auto; }
+    .lightbox-footer { border-top: 1px solid #122f34; }
+    .lightbox-footer .download-link { font-weight: 700; }
+    @media (max-width: 42rem) {
+      body { padding: 1rem; }
+      body > header { align-items: flex-start; flex-direction: column; }
+      #gallery { grid-template-columns: 1fr; }
+      #image-dialog { max-height: 100dvh; width: 100vw; }
+      .lightbox-shell { max-height: 100dvh; }
+      .lightbox-stage { padding: .5rem; }
+      .lightbox-stage img { max-height: calc(100dvh - 9rem); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Trelew Social Media Ads</h1>
+    <nav aria-label="Main navigation"><a href="dashboard.html">Ads dashboard</a></nav>
+  </header>
+  <p>Generated post sets from <code>out/&lt;date&gt;/&lt;slug&gt;/</code>.</p>
+  <section class="filter-panel" aria-labelledby="run-filter-heading">
+    <div class="filter-heading">
+      <h2 id="run-filter-heading">Filter by run</h2>
+      <p id="result-count" role="status" aria-live="polite">Loading posts…</p>
+    </div>
+    <div id="run-filters" aria-label="Generated post runs"></div>
+  </section>
+  <main id="gallery" aria-live="polite">Loading…</main>
+  <dialog id="image-dialog" aria-labelledby="image-dialog-title">
+    <div class="lightbox-shell">
+      <header class="lightbox-header">
+        <h2 id="image-dialog-title">Image preview</h2>
+        <button class="lightbox-close" id="image-dialog-close" type="button" aria-label="Close image preview">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+      <div class="lightbox-stage" id="image-dialog-stage"></div>
+      <footer class="lightbox-footer">
+        <code id="image-dialog-reference"></code>
+        <a class="download-link" id="image-dialog-download" href="" download>Download picture</a>
+      </footer>
+    </div>
+  </dialog>
+  <script>
+    const gallery = document.querySelector('#gallery');
+    const runFilters = document.querySelector('#run-filters');
+    const resultCount = document.querySelector('#result-count');
+    const imageDialog = document.querySelector('#image-dialog');
+    const imageDialogTitle = document.querySelector('#image-dialog-title');
+    const imageDialogStage = document.querySelector('#image-dialog-stage');
+    const imageDialogPreview = document.createElement('img');
+    imageDialogPreview.id = 'image-dialog-preview';
+    imageDialogStage.append(imageDialogPreview);
+    const imageDialogReference = document.querySelector('#image-dialog-reference');
+    const imageDialogDownload = document.querySelector('#image-dialog-download');
+    let items = [];
+
+    const params = new URLSearchParams(window.location.search);
+    let activeRun = params.get('run') || 'all';
+
+    function getRunReference(item) {
+      return item.run_ref || item.run || item.slug.split('-').slice(0, -2).join('-');
+    }
+
+    function getRunLabel(item) {
+      return item.run || getRunReference(item).split('/').pop();
+    }
+
+    function updateUrl() {
+      const next = new URL(window.location.href);
+      if (activeRun === 'all') next.searchParams.delete('run');
+      else next.searchParams.set('run', activeRun);
+      history.replaceState({}, '', next);
+    }
+
+    function renderFilters() {
+      const runs = new Map();
+      for (const item of items) {
+        const reference = getRunReference(item);
+        const current = runs.get(reference) || { label: getRunLabel(item), count: 0 };
+        current.count += 1;
+        runs.set(reference, current);
+      }
+
+      if (activeRun !== 'all' && !runs.has(activeRun)) activeRun = 'all';
+      runFilters.textContent = '';
+      const choices = [['all', 'All runs', items.length], ...Array.from(runs, ([reference, run]) => [reference, run.label, run.count])];
+      for (const [reference, label, count] of choices) {
+        const button = document.createElement('button');
+        button.className = 'filter-button';
+        button.type = 'button';
+        button.dataset.run = reference;
+        button.setAttribute('aria-pressed', String(activeRun === reference));
+        button.append(document.createTextNode(`${label} `));
+        const total = document.createElement('span');
+        total.className = 'filter-count';
+        total.textContent = `(${count})`;
+        button.append(total);
+        button.addEventListener('click', () => {
+          activeRun = reference;
+          updateUrl();
+          renderFilters();
+          renderGallery();
+        });
+        runFilters.append(button);
+      }
+    }
+
+    function openImageDialog(item, reference) {
+      imageDialogTitle.textContent = item.title || item.slug;
+      imageDialogPreview.src = item.image_path;
+      imageDialogPreview.alt = item.alt || imageDialogTitle.textContent;
+      imageDialogReference.textContent = reference;
+      imageDialogDownload.href = item.image_path;
+      imageDialogDownload.download = item.image_path.split('/').pop();
+      imageDialog.showModal();
+    }
+
+    function renderGallery() {
+      gallery.textContent = '';
+      const visibleItems = activeRun === 'all' ? items : items.filter(item => getRunReference(item) === activeRun);
+      resultCount.textContent = `${visibleItems.length} ${visibleItems.length === 1 ? 'post' : 'posts'} shown`;
+
+      for (const item of visibleItems) {
+        const reference = getRunReference(item);
+        const card = document.createElement('article');
+        const runRow = document.createElement('div');
+        const badge = document.createElement('span');
+        const downloadLink = document.createElement('a');
+        const referenceCode = document.createElement('code');
+        const title = document.createElement('h2');
+        const link = document.createElement('a');
+        const imageButton = document.createElement('button');
+        const image = document.createElement('img');
+        const zoomHint = document.createElement('span');
+        runRow.className = 'run-reference';
+        badge.className = 'run-badge';
+        badge.textContent = `Run ${getRunLabel(item)}`;
+        downloadLink.className = 'download-link';
+        downloadLink.href = item.image_path;
+        downloadLink.download = item.image_path.split('/').pop();
+        downloadLink.textContent = 'Download picture';
+        downloadLink.setAttribute('aria-label', `Download ${item.title || item.slug}`);
+        referenceCode.className = 'reference-code';
+        referenceCode.textContent = reference;
+        title.textContent = item.title || item.slug;
+        link.href = item.cta_url;
+        link.textContent = 'Open CTA';
+        imageButton.className = 'image-button';
+        imageButton.type = 'button';
+        imageButton.setAttribute('aria-label', `Open larger preview of ${title.textContent}`);
+        image.src = item.image_path;
+        image.alt = item.alt || title.textContent;
+        image.loading = 'lazy';
+        const [imageWidth, imageHeight] = String(item.size || '').split('x').map(Number);
+        if (imageWidth > 0 && imageHeight > 0) {
+          image.width = imageWidth;
+          image.height = imageHeight;
+        }
+        zoomHint.className = 'zoom-hint';
+        zoomHint.textContent = 'View larger';
+        imageButton.addEventListener('click', () => openImageDialog(item, reference));
+        imageButton.append(image, zoomHint);
+        runRow.append(badge, downloadLink);
+        card.append(runRow, referenceCode, title, imageButton, document.createElement('p'), link);
+        card.querySelector('p').textContent = item.caption || '';
+        gallery.append(card);
+      }
+
+      if (!visibleItems.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'No generated posts belong to this run.';
+        gallery.append(empty);
+      }
+    }
+
+    fetch('manifest.json').then(response => {
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      return response.json();
+    }).then(manifest => {
+      items = manifest.sets || [];
+      renderFilters();
+      renderGallery();
+    }).catch(error => {
+      gallery.className = 'error';
+      gallery.textContent = `Could not load manifest.json: ${error.message}`;
+      resultCount.textContent = 'Gallery unavailable';
+    });
+
+    document.querySelector('#image-dialog-close').addEventListener('click', () => imageDialog.close());
+    imageDialog.addEventListener('click', event => {
+      if (event.target === imageDialog) imageDialog.close();
+    });
+    imageDialog.addEventListener('close', () => {
+      imageDialogPreview.removeAttribute('src');
+    });
+  </script>
+</body>
+</html>
